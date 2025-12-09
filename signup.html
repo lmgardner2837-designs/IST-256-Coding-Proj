@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Sign Up Page</title>
+    <style>
+        body {
+            background: linear-gradient(orange, red);
+            font-family: Arial;
+        }
+
+        .box {
+            background: lavender;
+            padding: 20px;
+            margin: 20px auto;
+            border: 2px solid black;
+            width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            background: lightgray;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input {
+            width: 95%;
+            padding: 5px;
+            margin-top: 3px;
+        }
+
+        button {
+            background: lightgreen
+        }
+    </style>
+</head>
+
+<body>
+  <div class="box">
+    <h2>User Sign-Up</h2>
+    <form id="signupForm">
+      <label>Full Name *</label>
+      <input type="text" id="fullName">
+      <div id="nameError" class="error"></div>
+
+      <label>Email *</label>
+      <input type="text" id="email">
+      <div id="emailError" class="error"></div>
+
+      <label>Phone (optional)</label>
+      <input type="text" id="phone">
+
+      <label>Age or Grade *</label>
+      <input type="text" id="age">
+      <div id="ageError" class="error"></div>
+
+      <label>Address or Affiliation *</label>
+      <input type="text" id="address">
+      <div id="addressError" class="error"></div>
+
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <h4>User JSON Data:</h4>
+    <pre id="userData"></pre>
+  </div>
+
+  <script src="signup.js"></script>
+</body>
+</html>

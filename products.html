@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Trader Joe's Product Manager</title>
+  <style>
+    body {
+      background: linear-gradient(orange, red);
+      font-family: Arial;
+    }
+
+    h2 {
+      text-align: center;
+      background: lavender;
+    }
+
+    .box {
+      background: lavender;
+      padding: 20px;
+      margin: 20px auto;
+      border: 2px solid black;
+      width: 400px;
+    }
+
+    input {
+      width: 95%;
+      padding: 5px;
+      margin: 5px 0;
+    }
+
+    .error {
+      color: red;
+      font-size: 12px;
+    }
+
+    #productMessage {
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    table {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    table, th, td {
+      border: 1px solid black;
+    }
+
+    th, td {
+      padding: 5px;
+      text-align: left;
+    }
+
+    #searchInput {
+      width: 95%;
+      padding: 5px;
+      margin-top: 10px;
+    }
+
+    pre {
+      padding: 10px;
+      border: 1px solid black;
+    }
+
+    button {
+      padding: 8px 12px;
+      background-color: green;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-link {
+      display: block;
+      margin: 10px 0;
+      color: white;
+      background: red;
+      width: 200px;
+      text-align: center;
+      padding: 8px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="box">
+    <h2>Trader Joe's Product Manager</h2>
+
+    <a href="./index.html" class="nav-link">Back to Homepage</a>
+
+    <form id="productForm">
+      <label>Product ID *</label>
+      <input type="text" id="productId">
+      <div id="idError" class="error"></div>
+
+      <label>Description *</label>
+      <input type="text" id="description">
+      <div id="descError" class="error"></div>
+
+      <label>Category *</label>
+      <input type="text" id="category">
+      <div id="catError" class="error"></div>
+
+      <label>Unit of Measure *</label>
+      <input type="text" id="unit">
+      <div id="unitError" class="error"></div>
+
+      <label>Price *</label>
+      <input type="text" id="price">
+      <div id="priceError" class="error"></div>
+
+      <label>Weight / Additional Info (optional)</label>
+      <input type="text" id="weight">
+
+      <button type="submit">Add / Update Product</button>
+    </form>
+
+    <!-- message area used by products.js -->
+    <div id="productMessage" class="error"></div>
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search products by ID or Description"
+    />
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Unit</th>
+          <th>Price</th>
+          <th>Weight / Info</th>
+        </tr>
+      </thead>
+      <tbody id="productTable">
+      </tbody>
+    </table>
+
+    <h4>JSON Data:</h4>
+    <pre id="jsonOutput"></pre>
+  </div>
+
+  <script src="products.js"></script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Trader Joe's Shopping Cart</title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <style>
+    body {
+      background: linear-gradient(orange, red);
+      font-family: Arial, sans-serif;
+    }
+
+    .header,
+    .footer {
+      background: #cc0000;
+      color: white;
+      text-align: center;
+      padding: 15px;
+    }
+
+    .cart-box {
+      background: lavender;
+      padding: 20px;
+      margin: 20px auto;
+      border: 2px solid black;
+      border-radius: 10px;
+      max-width: 1000px;
+    }
+
+    .nav-link {
+      display: inline-block;
+      margin: 10px 5px;
+      padding: 8px 12px;
+      background: green;
+      color: white;
+      border-radius: 5px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .nav-link:hover {
+      background: darkgreen;
+      color: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    table, th, td {
+      border: 1px solid black;
+    }
+
+    th, td {
+      padding: 6px;
+      text-align: left;
+    }
+
+    th {
+      background: #cc0000;
+      color: white;
+    }
+
+    .qty-input {
+      width: 80px;
+    }
+
+    .btn-save-cart {
+      background: green;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px 16px;
+      margin-top: 10px;
+    }
+
+    .btn-save-cart:hover {
+      background: darkgreen;
+    }
+
+    #cartStatus {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <h1>Trader Joe's Shopping Cart</h1>
+    <a href="index.html" class="nav-link">Back to Storefront</a>
+    <a href="products.html" class="nav-link">Go to Product Manager</a>
+  </header>
+
+  <div class="cart-box">
+    <h3>Available Products</h3>
+
+    <input
+      type="text"
+      id="searchBox"
+      placeholder="Search by ID, name, or category..."
+      class="form-control mb-2"
+    />
+
+    <!-- Products table (pulled from MySQL) -->
+    <table id="productsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Unit</th>
+          <th>Price</th>
+          <th style="width: 110px;">Quantity</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Filled by JS -->
+      </tbody>
+    </table>
+
+    <hr />
+
+    <h3>Current Cart</h3>
+
+    <table id="cartTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Description</th>
+          <th>Unit</th>
+          <th>Price</th>
+          <th>Qty</th>
+          <th>Line Total</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Filled by JS -->
+      </tbody>
+    </table>
+
+    <button id="saveCartBtn" class="btn-save-cart">
+      Save Cart to Database
+    </button>
+
+    <div id="cartStatus"></div>
+  </div>
+
+  <div class="footer">
+    <p>&copy; 2025 Trader Joe's</p>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Detect sandbox vs local (same pattern as other pages)
+      const isSandbox =
+        window.location.hostname.includes("codingrooms") ||
+        window.location.hostname.includes("zybooks");
+
+      const API_BASE = isSandbox ? "" : "http://127.0.0.1:3000";
+
+      const productsTbody = document.querySelector("#productsTable tbody");
+      const cartTbody = document.querySelector("#cartTable tbody");
+      const searchInput = document.getElementById("searchBox");
+      const cartStatus = document.getElementById("cartStatus");
+      const saveCartBtn = document.getElementById("saveCartBtn");
+
+      let products = [];   // from /products
+      let cart = [];       // { sku, name, unit, price, quantity }
+
+      function showStatus(msg, type = "info") {
+        cartStatus.textContent = msg;
+        cartStatus.className = "";
+        if (!msg) return;
+
+        cartStatus.classList.add("mt-2");
+        if (type === "success") {
+          cartStatus.classList.add("alert", "alert-success");
+        } else if (type === "error") {
+          cartStatus.classList.add("alert", "alert-danger");
+        } else {
+          cartStatus.classList.add("alert", "alert-secondary");
+        }
+      }
+
+      // --- Load products from MySQL via Node ---
+      async function loadProducts() {
+        try {
+          const res = await fetch(`${API_BASE}/products`);
+          if (!res.ok) throw new Error("Server returned " + res.status);
+          products = await res.json();
+          renderProducts();
+        } catch (err) {
+          console.error("Error loading products:", err);
+          showStatus("Could not load products from server: " + err.message, "error");
+        }
+      }
+
+      // --- Render products table ---
+      function renderProducts() {
+        productsTbody.innerHTML = "";
+        const q = (searchInput.value || "").toLowerCase();
+
+        const filtered = products.filter((p) => {
+          const id = String(p.sku ?? p.id ?? "").toLowerCase();
+          const name = String(p.name || "").toLowerCase();
+          const cat = String(p.category || "").toLowerCase();
+          return id.includes(q) || name.includes(q) || cat.includes(q);
+        });
+
+        if (!filtered.length) {
+          productsTbody.innerHTML =
+            '<tr><td colspan="7" style="text-align:center;color:#666;">No products found.</td></tr>';
+          return;
+        }
+
+        filtered.forEach((p) => {
+          const sku = Number(p.sku ?? p.id);
+          const existing = cart.find((item) => item.sku === sku);
+          const qty = existing ? existing.quantity : 0;
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${String(sku).toString().padStart(3, "0")}</td>
+            <td>${p.name}</td>
+            <td>${p.category || ""}</td>
+            <td>${p.unit || ""}</td>
+            <td>${Number(p.price).toFixed(2)}</td>
+            <td>
+              <input
+                type="number"
+                min="0"
+                value="${qty}"
+                class="form-control form-control-sm qty-input"
+                data-sku="${sku}"
+              />
+            </td>
+            <td>
+              <button
+                type="button"
+                class="btn btn-sm btn-success add-btn"
+                data-sku="${sku}"
+              >
+                Add / Update
+              </button>
+            </td>
+          `;
+          productsTbody.appendChild(tr);
+        });
+      }
+
+      // --- Render cart table ---
+      function renderCart() {
+        cartTbody.innerHTML = "";
+
+        if (!cart.length) {
+          cartTbody.innerHTML =
+            '<tr><td colspan="7" style="text-align:center;color:#666;">Cart is empty.</td></tr>';
+          return;
+        }
+
+        let total = 0;
+
+        cart.forEach((item) => {
+          const line = item.price * item.quantity;
+          total += line;
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${String(item.sku).toString().padStart(3, "0")}</td>
+            <td>${item.name}</td>
+            <td>${item.unit || ""}</td>
+            <td>${item.price.toFixed(2)}</td>
+            <td>${item.quantity}</td>
+            <td>${line.toFixed(2)}</td>
+            <td>
+              <button
+                type="button"
+                class="btn btn-sm btn-danger remove-btn"
+                data-sku="${item.sku}"
+              >
+                Remove
+              </button>
+            </td>
+          `;
+          cartTbody.appendChild(tr);
+        });
+
+        const trTotal = document.createElement("tr");
+        trTotal.innerHTML = `
+          <td colspan="5" style="text-align:right;font-weight:bold;">Cart Total:</td>
+          <td colspan="2" style="font-weight:bold;">$${total.toFixed(2)}</td>
+        `;
+        cartTbody.appendChild(trTotal);
+      }
+
+      // --- Event: search filter ---
+      searchInput.addEventListener("input", () => {
+        renderProducts();
+      });
+
+      // --- Event: Add / Update from products table ---
+      document
+  .getElementById("productsTable")
+  .addEventListener("click", (e) => {
+    const btn = e.target.closest(".add-btn");
+    if (!btn) return;
+
+    const sku = Number(btn.dataset.sku);
+    const qtyInput = document.querySelector(`.qty-input[data-sku="${sku}"]`);
+    const qty = parseInt(qtyInput.value, 10) || 0;
+
+    if (qty <= 0) {
+      cart = cart.filter((item) => item.sku !== sku);
+      renderCart();
+      return;
+    }
+
+    const product = products.find(
+      (p) => Number(p.sku ?? p.id) === sku
+    );
+    if (!product) return;
+
+    const item = {
+      product_id: product.id,     
+      sku,                        
+      name: product.name,
+      unit: product.unit || "",
+      price: Number(product.price),
+      quantity: qty,
+    };
+
+    const index = cart.findIndex((c) => c.product_id === product.id);
+    if (index >= 0) cart[index] = item;
+    else cart.push(item);
+
+    renderCart();
+  });
+
+
+      // --- Event: Remove in cart table ---
+      document
+        .getElementById("cartTable")
+        .addEventListener("click", (e) => {
+          const btn = e.target.closest(".remove-btn");
+          if (!btn) return;
+
+          const sku = Number(btn.dataset.sku);
+          cart = cart.filter((item) => item.sku !== sku);
+
+          const input = document.querySelector(
+            `.qty-input[data-sku="${sku}"]`
+          );
+          if (input) input.value = 0;
+
+          renderCart();
+        });
+
+      // --- Save cart to database ---
+      saveCartBtn.addEventListener("click", async () => {
+  showStatus("");
+
+  if (!cart.length) {
+    showStatus("Cart is empty; nothing to save.", "error");
+    return;
+  }
+
+  const shopperEmail =
+    localStorage.getItem("shopperEmail") || "guest@example.com";
+
+  const payload = {
+    shopper_email: shopperEmail,
+    items: cart.map((item) => ({
+      product_id: item.product_id,   // <-- MUST match products.id
+      quantity: item.quantity,
+      price_each: item.price,
+    })),
+  };
+
+  try {
+    console.log("Saving cart:", payload);
+
+    const res = await fetch(`${API_BASE}/cart`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `Server returned ${res.status}`);
+    }
+
+    const saved = await res.json();
+    console.log("Cart saved:", saved);
+    showStatus("Cart saved to database.", "success");
+  } catch (err) {
+    console.error("Error saving cart:", err);
+    showStatus("Error saving cart: " + err.message, "error");
+  }
+});
+
+
+      // Initial load
+      loadProducts();
+      renderCart();
+    });
+  </script>
+</body>
+</html>

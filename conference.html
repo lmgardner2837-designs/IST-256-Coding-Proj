@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Conference Registration Signup</title>
+  <style>
+    body {
+      background: linear-gradient(orange, red);
+      font-family: Arial, sans-serif;
+    }
+
+    .box {
+      background: #111;
+      color: #f5f5f5;
+      padding: 20px;
+      margin: 20px auto;
+      border: 2px solid black;
+      width: 450px;
+      border-radius: 4px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 5px;
+      margin-top: 3px;
+      box-sizing: border-box;
+      border-radius: 3px;
+      border: 1px solid #444;
+      background: #222;
+      color: #f5f5f5;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 8px 12px;
+      background-color: #0d6efd;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #0b5ed7;
+    }
+
+    .btn-back {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      background: green;
+      color: white;
+      text-decoration: none;
+      border-radius: 3px;
+    }
+
+    #statusBox {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .alert {
+      padding: 8px 10px;
+      border-radius: 3px;
+    }
+
+    .alert-success {
+      background: #155724;
+      color: #d4edda;
+    }
+
+    .alert-danger {
+      background: #721c24;
+      color: #f8d7da;
+    }
+
+    .alert-secondary {
+      background: #343a40;
+      color: #e2e3e5;
+    }
+
+    h4 {
+      margin-top: 20px;
+    }
+
+    pre {
+      background: #000;
+      color: #0f0;
+      padding: 10px;
+      border-radius: 3px;
+      border: 1px solid #444;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="box">
+    <a href="index.html" class="btn-back">&larr; Back to Home</a>
+
+    <h2>Conference Registration Signup</h2>
+
+    <form id="confForm">
+      <label>Full Name *</label>
+      <input type="text" id="fullName" />
+
+      <label>Email *</label>
+      <input type="email" id="email" />
+
+      <label>Phone (optional)</label>
+      <input type="text" id="phone" />
+
+      <label>Participation Type *</label>
+    <select id="participation">
+  <option value="">-- Select --</option>
+  <option value="1">Virtual</option>
+  <option value="2">In-Person</option>
+    </select>
+
+
+      <label>Select Session *</label>
+      <select id="session">
+        <option value="">-- Select --</option>
+        <option value="networking">Networking</option>
+        <option value="file_complaint">File Complaint</option>
+        <option value="product_demo">Product Demo</option>
+      </select>
+
+      <label>Dietary Restrictions (optional)</label>
+      <input type="text" id="dietary" />
+
+      <label>Comments (optional)</label>
+      <textarea id="comments" rows="3"></textarea>
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <div id="statusBox"></div>
+
+    <h4>JSON Data to Send:</h4>
+    <pre id="jsonPreview"></pre>
+  </div>
+
+  <script src="conference.js"></script>
+</body>
+</html>
